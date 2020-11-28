@@ -1,0 +1,4 @@
+Updates the tmux window title with the current song title in mpv via unix socket.
+
+- start mpv with something like ~mpv https://q2stream.wqxr.org/q2.aac --input-ipc-server=/tmp/mpvsocket~
+- run ~mpvctrl~ in the background
