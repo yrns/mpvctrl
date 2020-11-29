@@ -1,4 +1,4 @@
-use serde_json::{from_slice, Value};
+use serde_json::{from_slice, Result, Value};
 use smol::{net::unix::UnixStream, prelude::*, process::Command};
 
 const CMD: &[u8] =
@@ -12,16 +12,25 @@ fn main() -> anyhow::Result<()> {
 
         loop {
             let n = stream.read(&mut buf).await?;
-            let v: Value = from_slice(&buf[..n])?;
+            let v: Result<Value> = from_slice(&buf[..n]);
 
-            if v["event"] == "property-change" {
-                let v = v["data"].as_str().unwrap();
+            match v {
+                Ok(v) => {
+                    if v["event"] == "property-change" {
+                        let v = v["data"].as_str().unwrap();
 
-                let _ = Command::new("tmux")
-                    .arg("rename-window")
-                    .arg(v)
-                    .output()
-                    .await?;
+                        let _ = Command::new("tmux")
+                            .arg("rename-window")
+                            .arg(v)
+                            .output()
+                            .await?;
+                    }
+                }
+                Err(e) => eprintln!(
+                    "error in json: {} {}",
+                    e,
+                    std::str::from_utf8(&buf[..n]).unwrap()
+                ),
             }
         }
 
