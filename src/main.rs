@@ -20,6 +20,14 @@ async fn connect() -> Result<UnixStream, std::io::Error> {
 
 fn main() -> anyhow::Result<()> {
     smol::block_on(async {
+        let out = Command::new("tmux")
+            .arg("display-message")
+            .arg("-p")
+            .arg("#I")
+            .output()
+            .await?;
+        let current_window = std::str::from_utf8(&out.stdout).unwrap().trim();
+
         let mut stream = connect().await?;
 
         stream.write_all(CMD).await?;
@@ -49,6 +57,8 @@ fn main() -> anyhow::Result<()> {
 
                             let _ = match Command::new("tmux")
                                 .arg("rename-window")
+                                .arg("-t")
+                                .arg(current_window)
                                 .arg(v)
                                 .output()
                                 .await
