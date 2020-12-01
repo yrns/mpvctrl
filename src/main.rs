@@ -77,6 +77,19 @@ fn main() -> anyhow::Result<()> {
             }
         }
 
+        // unset window title
+        let _ = match Command::new("tmux")
+            .arg("rename-window")
+            .arg("-t")
+            .arg(current_window)
+            .arg("")
+            .output()
+            .await
+        {
+            Ok(_) => (),
+            Err(e) => eprintln!("error in command: {}", e),
+        };
+
         Ok(())
     })
 }
